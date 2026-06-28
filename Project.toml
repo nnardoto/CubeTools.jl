@@ -1,0 +1,11 @@
+name = "CubeTools"
+uuid = "97ae1270-c3bd-4b87-8f1f-81e732daf958"
+version = "0.1.0"
+authors = ["Nathanael Nardoto Batista"]
+
+[deps]
+Printf = "de0858da-6303-5e67-8744-51eddeeeb8d7"
+StaticArrays = "90137ffa-7385-5640-81b9-e52037218182"
+
+[compat]
+Printf = "1.11.0"
