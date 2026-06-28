@@ -14,7 +14,7 @@ end
 mutable struct CubeFile
     title       :: Tuple{String, String}
     origin      :: SVector{3, Float64}
-    dl       :: SMatrix{3, 3, Float64, 9}
+    dl          :: SMatrix{3, 3, Float64, 9}
     npoints     :: SVector{3, Int}
     periodicity :: SVector{3, Bool}
     atoms       :: Vector{Atom}
