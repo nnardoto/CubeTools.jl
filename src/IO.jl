@@ -1,17 +1,17 @@
-function read_cube(FileName::String, periodicity=(true, true, true))::CubeFile
+function open_cube(FileName::String, periodicity=(true, true, true))::CubeFile
     open(FileName) do file
         title1 = readline(file)
         title2 = readline(file)
 
         origin_line = split(readline(file))
         n_atoms = parse(Int, origin_line[1])
-        origin = SVector{3, Float64}(parse.(Float64, origin_line[2:4]))
+        origin  = SVector{3, Float64}(parse.(Float64, origin_line[2:4]))
 
         npts = zeros(Int, 3)
         axes_buf = zeros(Float64, 3, 3)
         for i in 1:3
-            axis_line = split(readline(file))
-            npts[i] = parse(Int, axis_line[1])
+            axis_line      = split(readline(file))
+            npts[i]        = parse(Int, axis_line[1])
             axes_buf[i, :] = parse.(Float64, axis_line[2:4])
         end
         npoints = SVector{3, Int}(npts)
@@ -20,9 +20,9 @@ function read_cube(FileName::String, periodicity=(true, true, true))::CubeFile
         atoms = Atom[]
         for _ in 1:n_atoms
             atom_line = split(readline(file))
-            Z      = parse(Int,     atom_line[1])
-            charge = parse(Float64, atom_line[2])
-            pos    = SVector{3, Float64}(parse.(Float64, atom_line[3:5]))
+            Z         = parse(Int,     atom_line[1])
+            charge    = parse(Float64, atom_line[2])
+            pos       = SVector{3, Float64}(parse.(Float64, atom_line[3:5]))
             push!(atoms, Atom(Z, charge, pos))
         end
 
@@ -31,6 +31,13 @@ function read_cube(FileName::String, periodicity=(true, true, true))::CubeFile
             append!(data, parse.(Float64, split(line)))
         end
 
+        # Verifica se o número de pontos lidos corresponde ao esperado
+        expected_points = prod(npoints)
+        if length(data) != expected_points
+            error("O número de pontos lidos ($length(data)) não corresponde ao esperado ($expected_points).")
+        end 
+
+        # Cria o objeto CubeFile com os dados lidos
         CubeFile(
             (title1, title2),
             origin,
@@ -43,7 +50,7 @@ function read_cube(FileName::String, periodicity=(true, true, true))::CubeFile
     end
 end
 
-function write_cube(cube::CubeFile, FileName::String)
+function save_cube(cube::CubeFile, FileName::String)
     open(FileName, "w") do file
         println(file, cube.title[1])
         println(file, cube.title[2])

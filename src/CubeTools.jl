@@ -4,6 +4,7 @@ module CubeTools
 
     include("Types.jl")
     include("IO.jl")
+    include("Arithmetics.jl")
 
-    export CubeFile, Atom, read_cube, write_cube
+    export CubeFile, Atom, open_cube, save_cube
 end
