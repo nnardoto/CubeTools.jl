@@ -1,5 +1,5 @@
 using CubeTools
 
-H2 = open_cube("Te_ESM_N5_vac50.vhart.cube")
+H2 = open_cube("Telurio_bulk_model.vhart.cube")
 
 ElectricField(H2)

@@ -11,13 +11,14 @@ function Gradient(cube::CubeFile) :: Vector{CubeData}
 
     data_fft = fft(cube.data)
 
-    # Comprimento físico de cada passo de malha em Bohr (norma do vetor dl)
-    d = Float64[norm(col) for col in eachcol(cube.dl)]
+    # Comprimento físico de cada passo de malha em Bohr (norma do vetor dl[i,:])
+    d = Float64[norm(row) for row in eachrow(cube.dl)]
 
-    # Frequências de Fourier em rad/Bohr para cada eixo
-    kx = 2π .* fftfreq(nx, d[1])
-    ky = 2π .* fftfreq(ny, d[2])
-    kz = 2π .* fftfreq(nz, d[3])
+    # Frequências de Fourier em rad/Bohr para cada eixo.
+    # Julia: fftfreq(n, fs) espera fs = taxa de amostragem = 1/espaçamento (Bohr⁻¹).
+    kx = 2π .* fftfreq(nx, 1/d[1])
+    ky = 2π .* fftfreq(ny, 1/d[2])
+    kz = 2π .* fftfreq(nz, 1/d[3])
 
     # Reshape para broadcast 3D: kx ao longo do eixo 1, ky do 2, kz do 3
     KX = reshape(kx, nx, 1, 1)
