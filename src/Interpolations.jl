@@ -1,7 +1,6 @@
 # Calcula o campo elétrico na posição de cada átomo a partir da densidade eletrônica.
 #
-# O campo elétrico é aproximado pelo gradiente negativo do potencial, que por sua vez
-# é proporcional ao gradiente da densidade: E ≈ -∇ρ.
+# O campo elétrico é o gradiente negativo do potencial eletrostático: E = -∇V.
 #
 # O gradiente espectral é calculado no espaço de Fourier como  i·k·ρ̂(k)
 # e avaliado nas posições atômicas via síntese de Fourier direta:
@@ -9,23 +8,27 @@
 #
 # Usar (r − origin) em vez de r é essencial porque a FFT assume que os dados
 # começam na posição zero; a origem da célula é o deslocamento físico real.
-function ElectricField(cube::CubeFile)
-    ρ = cube.data
+function ElectricField(cube::CubeFile) :: Vector{SVector{3, Float64}}
+    V_r = cube.data
     nx = cube.npoints[1]; ny = cube.npoints[2]; nz = cube.npoints[3]
     N  = nx * ny * nz
 
-    # Frequências de Fourier em rad/Bohr para cada eixo
-    # fftfreq(n, 1/d) retorna frequências em 1/Bohr; × 2π converte para rad/Bohr
-    kx = fftfreq(nx, 1 / cube.dl[1, 1]) * 2π
-    ky = fftfreq(ny, 1 / cube.dl[2, 2]) * 2π
-    kz = fftfreq(nz, 1 / cube.dl[3, 3]) * 2π
+    fsx = 1/cube.dl[1, 1]; fsy = 1/cube.dl[2, 2]; fsk = 1 / cube.dl[3, 3] 
+    EField = SVector{3, Float64}[]
 
-    ρ̂ = fft(ρ)
+    # Frequências de Fourier em rad/Bohr para cada eixo.
+    # Julia: fftfreq(n, fs) espera fs = taxa de amostragem = 1/espaçamento (Bohr⁻¹).
+    # Passar o espaçamento d diretamente daria k d² vezes menor → fases erradas.
+    kx = fftfreq(nx, fsx) * 2π
+    ky = fftfreq(ny, fsy) * 2π
+    kz = fftfreq(nz, fsk) * 2π
+
+    V_k = fft(V_r)
 
     # Gradiente no espaço de Fourier: multiplicação por i·k
-    Êx = im .* reshape(kx, nx,  1,  1) .* ρ̂
-    Êy = im .* reshape(ky,  1, ny,  1) .* ρ̂
-    Êz = im .* reshape(kz,  1,  1, nz) .* ρ̂
+    Êx = im .* reshape(kx, nx,  1,  1) .* V_k
+    Êy = im .* reshape(ky,  1, ny,  1) .* V_k
+    Êz = im .* reshape(kz,  1,  1, nz) .* V_k
 
     ox, oy, oz = cube.origin
 
@@ -40,11 +43,15 @@ function ElectricField(cube::CubeFile)
         φy = reshape(exp.(im .* ky .* ry),  1, ny,  1)
         φz = reshape(exp.(im .* kz .* rz),  1,  1, nz)
 
-        Ex = real(sum(Êx .* φx .* φy .* φz)) / N
-        Ey = real(sum(Êy .* φx .* φy .* φz)) / N
-        Ez = real(sum(Êz .* φx .* φy .* φz)) / N
+        # O campo elétrico é o gradiente negativo do potencial eletrostático.
+        # A FFT normaliza por N, então precisamos dividir pelo número total de pontos.
+        # A função real() é usada para descartar a parte imaginária residual da FFT.
+        Ex = -real(sum(Êx .* φx .* φy .* φz)) / N
+        Ey = -real(sum(Êy .* φx .* φy .* φz)) / N
+        Ez = -real(sum(Êz .* φx .* φy .* φz)) / N
 
-        @printf("Campo elétrico no átomo %0d (Z=%d): (%14.6f, %14.6f, %14.6f)\n",
-                i, atom.Z, Ex, Ey, Ez)
+        push!(EField, SVector{3, Float64}(Ex, Ey, Ez))
     end
+
+    return EField
 end
