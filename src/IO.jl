@@ -8,14 +8,14 @@ function open_cube(FileName::String, periodicity=(true, true, true))::CubeFile
         origin  = SVector{3, Float64}(parse.(Float64, origin_line[2:4]))
 
         npts = zeros(Int, 3)
-        axes_buf = zeros(Float64, 3, 3)
+        dl_buf = zeros(Float64, 3, 3)
         for i in 1:3
             axis_line      = split(readline(file))
             npts[i]        = parse(Int, axis_line[1])
-            axes_buf[i, :] = parse.(Float64, axis_line[2:4])
+            dl_buf[i, :] = parse.(Float64, axis_line[2:4])
         end
         npoints = SVector{3, Int}(npts)
-        axes = SMatrix{3, 3, Float64, 9}(axes_buf)
+        dl      = SMatrix{3, 3, Float64, 9}(dl_buf)
 
         atoms = Atom[]
         for _ in 1:n_atoms
@@ -31,6 +31,9 @@ function open_cube(FileName::String, periodicity=(true, true, true))::CubeFile
             append!(data, parse.(Float64, split(line)))
         end
 
+        data = reshape(data, npoints[1], npoints[2], npoints[3])        # Reshape the data into a 3D array with dimensions npoints
+        data = permutedims(data, (3, 2, 1))                             # Permute the dimensions to match the expected order
+
         # Verifica se o número de pontos lidos corresponde ao esperado
         expected_points = prod(npoints)
         if length(data) != expected_points
@@ -39,11 +42,12 @@ function open_cube(FileName::String, periodicity=(true, true, true))::CubeFile
 
         # Cria o objeto CubeFile com os dados lidos
         CubeFile(
-            (title1, title2),
+            title1,
+            title2,
             origin,
-            axes,
+            dl,
             npoints,
-            SVector{3, Bool}(periodicity),
+            periodicity,
             atoms,
             data,
         )
@@ -52,8 +56,8 @@ end
 
 function save_cube(cube::CubeFile, FileName::String)
     open(FileName, "w") do file
-        println(file, cube.title[1])
-        println(file, cube.title[2])
+        println(file, cube.LineOne)
+        println(file, cube.LineTwo)
 
         @printf(file, "%5d %12.6f %12.6f %12.6f\n",
             length(cube.atoms), cube.origin[1], cube.origin[2], cube.origin[3])
@@ -68,7 +72,8 @@ function save_cube(cube::CubeFile, FileName::String)
                 atom.Z, atom.charge, atom.position[1], atom.position[2], atom.position[3])
         end
 
-        for (i, value) in enumerate(cube.data)
+        data = permutedims(cube.data, (3, 2, 1))  # Permute the dimensions back to the original order
+        for (i, value) in enumerate(data)
             @printf(file, " %12.5E", value)
             if i % 6 == 0
                 println(file)
