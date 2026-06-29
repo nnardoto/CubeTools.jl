@@ -38,13 +38,14 @@ function open_cube(FileName::String, periodicity=(true, true, true))::CubeFile
             append!(data, parse.(Float64, split(line)))
         end
 
-        # Reorganiza o vetor 1D em array 3D (nx × ny × nz)
-        # Julia é column-major: reshape com nx primeiro mantém x como índice externo
-        data = reshape(data, npoints[1], npoints[2], npoints[3])
-
         if length(data) != prod(npoints)
-            error("O número de pontos lidos ($length(data)) não corresponde ao esperado ($(prod(npoints))).")
+            error("O número de pontos lidos ($(length(data))) não corresponde ao esperado ($(prod(npoints))).")
         end
+
+        # O arquivo .cube armazena com x variando mais devagar e z mais rápido.
+        # Julia é column-major: reshape com nz primeiro captura z como índice externo.
+        # permutedims(_, (3,2,1)) reordena para a semântica [ix, iy, iz].
+        data = permutedims(reshape(data, npoints[3], npoints[2], npoints[1]), (3, 2, 1))
 
         CubeFile(title1, title2, origin, dl, npoints, periodicity, atoms, data)
     end
