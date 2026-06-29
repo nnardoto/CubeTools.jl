@@ -1,22 +1,28 @@
+# Lê um arquivo .cube e retorna um objeto CubeFile.
+# O formato .cube armazena os dados com x variando mais lentamente e z mais rapidamente.
+# O array resultante tem shape (nx, ny, nz) com indexação [ix, iy, iz].
 function open_cube(FileName::String, periodicity=(true, true, true))::CubeFile
     open(FileName) do file
         title1 = readline(file)
         title2 = readline(file)
 
+        # Linha 3: número de átomos e origem da malha
         origin_line = split(readline(file))
         n_atoms = parse(Int, origin_line[1])
         origin  = SVector{3, Float64}(parse.(Float64, origin_line[2:4]))
 
-        npts = zeros(Int, 3)
+        # Linhas 4–6: número de pontos e vetor de passo para cada eixo
+        npts   = zeros(Int, 3)
         dl_buf = zeros(Float64, 3, 3)
         for i in 1:3
-            axis_line      = split(readline(file))
-            npts[i]        = parse(Int, axis_line[1])
+            axis_line    = split(readline(file))
+            npts[i]      = parse(Int, axis_line[1])
             dl_buf[i, :] = parse.(Float64, axis_line[2:4])
         end
         npoints = SVector{3, Int}(npts)
         dl      = SMatrix{3, 3, Float64, 9}(dl_buf)
 
+        # Linhas seguintes: átomos (Z, carga, x, y, z)
         atoms = Atom[]
         for _ in 1:n_atoms
             atom_line = split(readline(file))
@@ -26,34 +32,28 @@ function open_cube(FileName::String, periodicity=(true, true, true))::CubeFile
             push!(atoms, Atom(Z, charge, pos))
         end
 
+        # Resto do arquivo: dados volumétricos em ordem x-outer, z-inner
         data = Float64[]
         for line in eachline(file)
             append!(data, parse.(Float64, split(line)))
         end
 
-        data = reshape(data, npoints[1], npoints[2], npoints[3])        # Reshape the data into a 3D array with dimensions npoints
-        data = permutedims(data, (3, 2, 1))                             # Permute the dimensions to match the expected order
+        # Reorganiza o vetor 1D em array 3D (nx × ny × nz)
+        # Julia é column-major: reshape com nx primeiro mantém x como índice externo
+        data = reshape(data, npoints[1], npoints[2], npoints[3])
 
-        # Verifica se o número de pontos lidos corresponde ao esperado
-        expected_points = prod(npoints)
-        if length(data) != expected_points
-            error("O número de pontos lidos ($length(data)) não corresponde ao esperado ($expected_points).")
-        end 
+        if length(data) != prod(npoints)
+            error("O número de pontos lidos ($length(data)) não corresponde ao esperado ($(prod(npoints))).")
+        end
 
-        # Cria o objeto CubeFile com os dados lidos
-        CubeFile(
-            title1,
-            title2,
-            origin,
-            dl,
-            npoints,
-            periodicity,
-            atoms,
-            data,
-        )
+        CubeFile(title1, title2, origin, dl, npoints, periodicity, atoms, data)
     end
 end
 
+
+# Escreve um objeto CubeFile em disco no formato .cube padrão.
+# Os dados são escritos com x variando mais lentamente e z mais rapidamente,
+# conforme a especificação do formato.
 function save_cube(cube::CubeFile, FileName::String)
     open(FileName, "w") do file
         println(file, cube.LineOne)
@@ -72,7 +72,9 @@ function save_cube(cube::CubeFile, FileName::String)
                 atom.Z, atom.charge, atom.position[1], atom.position[2], atom.position[3])
         end
 
-        data = permutedims(cube.data, (3, 2, 1))  # Permute the dimensions back to the original order
+        # permutedims (3,2,1) transforma (nx,ny,nz) → (nz,ny,nx):
+        # iteração column-major resulta em z variando mais rápido, conforme o formato
+        data = permutedims(cube.data, (3, 2, 1))
         for (i, value) in enumerate(data)
             @printf(file, " %12.5E", value)
             if i % 6 == 0
