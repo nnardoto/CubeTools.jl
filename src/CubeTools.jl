@@ -12,6 +12,7 @@ module CubeTools
     include("Arithmetics.jl")  # Operações aritméticas entre CubeFiles
     include("FFT.jl")          # Gradiente via transformada de Fourier
     include("Interpolations.jl") # Campo elétrico por interpolação espectral
+    include("Utils.jl")        # Funções utilitárias, como Display
 
-    export CubeFile, Atom, open_cube, save_cube, Gradient, ElectricField
+    export CubeFile, Atom, open_cube, save_cube, Gradient, ElectricField, Display
 end
