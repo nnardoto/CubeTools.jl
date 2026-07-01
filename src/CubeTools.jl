@@ -15,4 +15,5 @@ module CubeTools
     include("Utils.jl")        # Funções utilitárias, como Display
 
     export CubeFile, Atom, open_cube, save_cube, Gradient, ElectricField, Display
+    export BohrToAngstrom, AngstromToBohr, HartreeToEV, EVToHartree
 end

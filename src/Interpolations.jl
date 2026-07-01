@@ -8,7 +8,7 @@
 #
 # Usar (r − origin) em vez de r é essencial porque a FFT assume que os dados
 # começam na posição zero; a origem da célula é o deslocamento físico real.
-function ElectricField(cube::CubeFile) :: Vector{SVector{3, Float64}}
+function ElectricField(cube::CubeFile, units::Symbol = :bohr) :: Vector{SVector{3, Float64}}
     V_r = cube.data
     nx = cube.npoints[1]; ny = cube.npoints[2]; nz = cube.npoints[3]
     N  = nx * ny * nz
@@ -51,6 +51,11 @@ function ElectricField(cube::CubeFile) :: Vector{SVector{3, Float64}}
         Ez = -real(sum(Êz .* φx .* φy .* φz)) / N
 
         push!(EField, SVector{3, Float64}(Ex, Ey, Ez))
+    end
+
+    if units == :angstrom
+        # Converte de Bohr⁻² para V/Å usando a constante de conversão
+        EField .= EField .* (HartreeToEV / BohrToAngstrom)
     end
 
     return EField
