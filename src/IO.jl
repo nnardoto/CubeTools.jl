@@ -1,7 +1,7 @@
 # Lê um arquivo .cube e retorna um objeto CubeFile.
 # O formato .cube armazena os dados com x variando mais lentamente e z mais rapidamente.
 # O array resultante tem shape (nx, ny, nz) com indexação [ix, iy, iz].
-function open_cube(FileName::String, periodicity=(true, true, true), units::Symbol=:bohr)::CubeFile
+function open_cube(FileName::String, periodicity=(true, true, true))::CubeFile
     open(FileName) do file
         title1 = readline(file)
         title2 = readline(file)
@@ -47,7 +47,7 @@ function open_cube(FileName::String, periodicity=(true, true, true), units::Symb
         # permutedims(_, (3,2,1)) reordena para a semântica [ix, iy, iz].
         data = permutedims(reshape(data, npoints[3], npoints[2], npoints[1]), (3, 2, 1))
 
-        CubeFile(title1, title2, origin, dl, npoints, periodicity, atoms, data, units)
+        CubeFile(title1, title2, origin, dl, npoints, periodicity, atoms, data)
     end
 end
 

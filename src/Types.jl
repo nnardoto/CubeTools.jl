@@ -37,5 +37,4 @@ mutable struct CubeFile
     periodicity :: NTuple{3, Bool}
     atoms       :: Vector{Atom}
     data        :: CubeData
-    units       :: Symbol  # :bohr ou :angstrom
 end
