@@ -11,9 +11,9 @@ module CubeTools
     include("IO.jl")           # Leitura e escrita de arquivos .cube
     include("Arithmetics.jl")  # Operações aritméticas entre CubeFiles
     include("ElectricField.jl") # Cálculo do campo elétrico a partir de dados de potencial de Hartree
-    include("Interpolations.jl") # Campo elétrico por interpolação espectral
+    include("Integrations.jl")
     include("Utils.jl")        # Funções utilitárias, como Display
 
     export CubeFile, Atom, open_cube, save_cube, Gradient, ElectricField, Display
-    export BohrToAngstrom, AngstromToBohr, HartreeToEV, EVToHartree
+    export BohrToAngstrom, AngstromToBohr, HartreeToEV, EVToHartree, +, -, *, /
 end
