@@ -1,5 +1,3 @@
-using LinearAlgebra
-
 # Calcula o campo elétrico na posição de cada átomo a partir do potencial
 # eletrostático armazenado no CubeFile, por diferenciação espectral (FFT).
 #

@@ -45,24 +45,3 @@ function Display(cube :: CubeFile)
 
     println()
 end
-
-
-function Bohr2Angstrom(cube::CubeFile) :: CubeFile
-    buffer = copy(cube)
-    buffer.origin .= buffer.origin .* BohrToAngstrom
-    buffer.dl .= buffer.dl .* BohrToAngstrom
-    buffer.atoms = [Atom(atom.Z, atom.charge, atom.position * BohrToAngstrom) for atom in buffer.atoms]
-    buffer.data .= buffer.data .* (HartreeToEV / BohrToAngstrom)
-    buffer.units = :angstrom
-    return buffer
-end
-
-function Angstrom2Bohr(cube::CubeFile) :: CubeFile
-    buffer = copy(cube)
-    buffer.origin .= buffer.origin .* AngstromToBohr
-    buffer.dl .= buffer.dl .* AngstromToBohr
-    buffer.atoms = [Atom(atom.Z, atom.charge, atom.position * AngstromToBohr) for atom in buffer.atoms]
-    buffer.data .= buffer.data .* (EVToHartree * BohrToAngstrom)
-    buffer.units = :bohr
-    return buffer
-end
