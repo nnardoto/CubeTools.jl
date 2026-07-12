@@ -4,6 +4,7 @@ module CubeTools
     using StaticArrays          # Vetores e matrizes de tamanho fixo em tempo de compilação
     using Printf                # Formatação de saída numérica
     using LinearAlgebra         # Norma de vetores e álgebra linear
+    using FFTW
 
     include("Types.jl")         # Tipos de dados: Atom, CubeFile e constantes físicas
     include("IO.jl")            # Leitura e escrita de arquivos .cube

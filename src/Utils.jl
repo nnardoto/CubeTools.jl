@@ -6,13 +6,7 @@ function Display(cube :: CubeFile)
 
 
     # Desenha uma Janela usando Printf para exibir informações do arquivo .cube
-    if cube.units == :bohr
-        println("[Summary] Units: Bohr (length) and Hartree (energy)")
-    elseif cube.units == :angstrom
-        println("[Summary] Units: Angstrom (length) and eV (energy)")
-    else
-        println("[Summary] Units: Unknown")
-    end
+    println("[Summary] Units: Bohr (length) and Hartree (energy)")
     println()  
     println("+" * "-"^50 * "+")
     println(cube.LineOne)
@@ -20,28 +14,16 @@ function Display(cube :: CubeFile)
     println("+" * "-"^50 * "+")
     println("[Summary] Number of atoms: ", length(cube.atoms))
     @printf("[Summary] Data size:       %d x %d x %d\n", size(cube.data)...)
+    println()   
+    println("[Summary] Cell Vectors (Bohr):")
+    @printf("  a: % 9.4f % 9.4f % 9.4f\n", a[1], a[2], a[3])
+    @printf("  b: % 9.4f % 9.4f % 9.4f\n", b[1], b[2], b[3])
+    @printf("  c: % 9.4f % 9.4f % 9.4f\n", c[1], c[2], c[3])
     println()
-    if cube.units == :bohr
-        println("[Summary] Cell Vectors (Bohr):")
-        @printf("  a: % 9.4f % 9.4f % 9.4f\n", a[1], a[2], a[3])
-        @printf("  b: % 9.4f % 9.4f % 9.4f\n", b[1], b[2], b[3])
-        @printf("  c: % 9.4f % 9.4f % 9.4f\n", c[1], c[2], c[3])
-    elseif cube.units == :angstrom
-        println("[Summary] Cell Vectors (Angstrom):")
-        @printf("  a: % 9.4f % 9.4f % 9.4f\n", a[1], a[2], a[3])
-        @printf("  b: % 9.4f % 9.4f % 9.4f\n", b[1], b[2], b[3])
-        @printf("  c: % 9.4f % 9.4f % 9.4f\n", c[1], c[2], c[3])
-    end
-    println()
-    if cube.units == :bohr
-        println("[Summary] Atom Positions: (Bohr):")
-    elseif cube.units == :angstrom
-        println("[Summary] Atom Positions: (Angstrom):")
-    end
+    println("[Summary] Atom Positions: (Bohr):")
     for (i, atom) in enumerate(cube.atoms)
         @printf("  Atom %d: % 9.4f % 9.4f % 9.4f\n", i, atom.position[1], atom.position[2], atom.position[3])
     end
     println("+" * "-"^50 * "+")
-
     println()
 end
