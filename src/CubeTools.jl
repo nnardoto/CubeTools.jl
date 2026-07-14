@@ -12,7 +12,9 @@ module CubeTools
     include("ElectricField.jl") # Cálculo do campo elétrico a partir de dados de potencial de Hartree
     include("Integrations.jl")
     include("Utils.jl")         # Funções utilitárias, como Display
+    include("Interpolations.jl")
 
     export CubeFile, Atom, open_cube, save_cube, ElectricField, Display
     export BohrToAngstrom, AngstromToBohr, HartreeToEV, EVToHartree, +, -, *, /
+    export ValueAtAtomicPositions
 end
